@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>One Price · Control de Calidad</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --azul: #1a2e4a;
+    --azul-medio: #2d4f7a;
+    --celeste: #4a90c4;
+    --acento: #e8a830;
+    --acento-suave: #fdf3dc;
+    --verde: #2e7d52;
+    --verde-suave: #d4f0e2;
+    --rojo: #c0392b;
+    --rojo-suave: #fde8e6;
+    --gris: #f5f6f8;
+    --gris-medio: #e2e6eb;
+    --texto: #1a2e4a;
+    --texto-suave: #6b7a8d;
+    --blanco: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--gris); color: var(--texto); min-height: 100vh; }
+
+  .header { background: var(--azul); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(26,46,74,0.18); }
+  .header-inner { display: flex; align-items: center; justify-content: space-between; padding: 14px 28px; max-width: 960px; margin: 0 auto; }
+  .logo { font-family: 'DM Serif Display', serif; color: var(--blanco); font-size: 1.35rem; }
+  .logo span { color: var(--acento); }
+  .fecha-hora { color: rgba(255,255,255,0.65); font-size: 0.8rem; font-weight: 300; text-align: right; }
+
+  .nav-tabs { display: flex; background: var(--azul-medio); max-width: 960px; margin: 0 auto; }
+  .nav-tab { flex: 1; padding: 10px 12px; text-align: center; color: rgba(255,255,255,0.6); font-size: 0.78rem; font-weight: 500; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; letter-spacing: 0.03em; text-transform: uppercase; }
+  .nav-tab:hover { color: rgba(255,255,255,0.9); }
+  .nav-tab.active { color: var(--acento); border-bottom-color: var(--acento); background: rgba(255,255,255,0.06); }
+  .nav-tab.hidden { display: none; }
+
+  .main { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .card { background: var(--blanco); border-radius: 12px; padding: 22px 24px; margin-bottom: 18px; box-shadow: 0 1px 6px rgba(26,46,74,0.07); border: 1px solid var(--gris-medio); }
+  .card-title { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--azul); margin-bottom: 4px; }
+  .card-subtitle { font-size: 0.78rem; color: var(--texto-suave); margin-bottom: 18px; }
+
+  .suc-selector { display: flex; gap: 10px; margin-bottom: 20px; }
+  .suc-btn { flex: 1; padding: 12px; border: 2px solid var(--gris-medio); border-radius: 10px; background: var(--blanco); cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; color: var(--texto-suave); transition: all 0.2s; text-align: center; }
+  .suc-btn:hover { border-color: var(--celeste); color: var(--azul); }
+  .suc-btn.selected { background: var(--azul); border-color: var(--azul); color: var(--blanco); }
+  .suc-btn .suc-tag { display: block; font-size: 0.65rem; font-weight: 300; margin-top: 2px; opacity: 0.75; }
+
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--texto-suave); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+  select, input, textarea { width: 100%; padding: 10px 14px; border: 1.5px solid var(--gris-medio); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--texto); background: var(--blanco); transition: border-color 0.2s; outline: none; }
+  select:focus, input:focus, textarea:focus { border-color: var(--celeste); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .checklist { list-style: none; }
+  .check-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--gris); }
+  .check-item:last-child { border-bottom: none; }
+  .check-item label { font-size: 0.88rem; line-height: 1.4; cursor: pointer; flex: 1; }
+  .check-item input[type="checkbox"] { width: 20px; height: 20px; min-width: 20px; margin-top: 1px; accent-color: var(--verde); cursor: pointer; }
+  .check-categoria { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--celeste); padding: 14px 0 6px; border-bottom: 1px solid var(--gris-medio); margin-bottom: 2px; }
+
+  .rating-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--gris); gap: 12px; }
+  .rating-row:last-child { border-bottom: none; }
+  .rating-label { font-size: 0.88rem; flex: 1; }
+  .stars { display: flex; gap: 4px; }
+  .star { font-size: 1.4rem; cursor: pointer; color: var(--gris-medio); transition: color 0.15s, transform 0.15s; line-height: 1; }
+  .star:hover, .star.activa { color: var(--acento); }
+  .star:hover { transform: scale(1.15); }
+
+  .btn { padding: 12px 24px; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+  .btn-primary { background: var(--azul); color: var(--blanco); width: 100%; justify-content: center; }
+  .btn-primary:hover { background: var(--azul-medio); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .btn-danger { background: var(--rojo); color: var(--blanco); }
+  .btn-outline { background: transparent; border: 2px solid var(--azul); color: var(--azul); }
+
+  .badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+  .badge-ok { background: var(--verde-suave); color: var(--verde); }
+  .badge-warn { background: var(--acento-suave); color: #9a6800; }
+  .badge-error { background: var(--rojo-suave); color: var(--rojo); }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 18px; }
+  .kpi-card { background: var(--blanco); border-radius: 12px; padding: 18px; border: 1px solid var(--gris-medio); text-align: center; }
+  .kpi-number { font-family: 'DM Serif Display', serif; font-size: 2rem; color: var(--azul); line-height: 1; margin-bottom: 4px; }
+  .kpi-label { font-size: 0.72rem; color: var(--texto-suave); text-transform: uppercase; letter-spacing: 0.04em; }
+
+  .tabla-historial { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .tabla-historial th { background: var(--azul); color: var(--blanco); padding: 9px 12px; text-align: left; font-weight: 500; font-size: 0.75rem; letter-spacing: 0.03em; }
+  .tabla-historial td { padding: 9px 12px; border-bottom: 1px solid var(--gris); vertical-align: middle; }
+  .tabla-historial tr:last-child td { border-bottom: none; }
+  .tabla-historial tr:hover td { background: var(--gris); }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--texto-suave); }
+  .empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; }
+  .empty-state p { font-size: 0.88rem; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--azul); color: var(--blanco); padding: 12px 24px; border-radius: 30px; font-size: 0.88rem; font-weight: 500; box-shadow: 0 4px 20px rgba(26,46,74,0.3); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); z-index: 999; white-space: nowrap; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { background: var(--verde); }
+  .toast.error { background: var(--rojo); }
+
+  .radio-group { display: flex; flex-wrap: wrap; gap: 8px; }
+  .radio-btn { padding: 7px 14px; border: 1.5px solid var(--gris-medio); border-radius: 20px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; background: var(--blanco); color: var(--texto-suave); }
+  .radio-btn:hover { border-color: var(--celeste); color: var(--azul); }
+  .radio-btn.selected { background: var(--azul); border-color: var(--azul); color: var(--blanco); }
+
+  .sev-row { display: flex; gap: 8px; }
+  .sev-btn { flex: 1; padding: 9px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 600; text-align: center; transition: all 0.2s; }
+  .sev-baja { background: var(--verde-suave); color: var(--verde); border-color: var(--verde-suave); }
+  .sev-media { background: var(--acento-suave); color: #9a6800; border-color: var(--acento-suave); }
+  .sev-alta { background: var(--rojo-suave); color: var(--rojo); border-color: var(--rojo-suave); }
+  .sev-btn.selected { border-width: 2px; box-shadow: 0 0 0 1px currentColor; }
+
+  .divider { height: 1px; background: var(--gris-medio); margin: 20px 0; }
+
+  /* LOGIN */
+  .login-overlay { position: fixed; inset: 0; background: var(--azul); display: flex; align-items: center; justify-content: center; z-index: 200; flex-direction: column; gap: 20px; }
+  .login-overlay.hidden { display: none; }
+  .login-box { background: var(--blanco); border-radius: 16px; padding: 36px 32px; width: 90%; max-width: 340px; text-align: center; }
+  .login-box .logo-big { font-family: 'DM Serif Display', serif; font-size: 1.6rem; color: var(--azul); margin-bottom: 6px; }
+  .login-box .logo-big span { color: var(--acento); }
+  .login-box p { font-size: 0.82rem; color: var(--texto-suave); margin-bottom: 24px; }
+  .login-box input { text-align: center; font-size: 1.1rem; letter-spacing: 0.15em; margin-bottom: 14px; }
+  .login-error { color: var(--rojo); font-size: 0.8rem; margin-top: -8px; margin-bottom: 10px; display: none; }
+
+  /* SYNC STATUS */
+  .sync-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.72rem; padding: 4px 10px; border-radius: 20px; }
+  .sync-ok { background: var(--verde-suave); color: var(--verde); }
+  .sync-fail { background: var(--rojo-suave); color: var(--rojo); }
+  .sync-pending { background: var(--acento-suave); color: #9a6800; }
+
+  /* FILTROS DASHBOARD */
+  .filtros { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filtro-btn { padding: 6px 14px; border: 1.5px solid var(--gris-medio); border-radius: 20px; font-size: 0.78rem; cursor: pointer; font-family: 'DM Sans', sans-serif; background: var(--blanco); color: var(--texto-suave); transition: all 0.2s; }
+  .filtro-btn.active { background: var(--azul); border-color: var(--azul); color: var(--blanco); }
+
+  /* LOGOUT */
+  .logout-btn { background: none; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.7); padding: 5px 12px; border-radius: 20px; font-size: 0.72rem; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+  .logout-btn:hover { border-color: var(--acento); color: var(--acento); }
+
+  @media(max-width:600px) {
+    .header-inner { padding: 12px 16px; }
+    .main { padding: 16px 12px; }
+    .nav-tab { font-size: 0.68rem; padding: 9px 6px; }
+    .tabla-historial { font-size: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN DASHBOARD -->
+<div class="login-overlay hidden" id="login-overlay">
+  <div class="login-box">
+    <div class="logo-big">One <span>Price</span></div>
+    <p>Acceso exclusivo · Dashboard</p>
+    <input type="password" id="login-pass" placeholder="••••" maxlength="10" onkeydown="if(event.key==='Enter') verificarPass()">
+    <div class="login-error" id="login-error">Contraseña incorrecta</div>
+    <button class="btn btn-primary" onclick="verificarPass()">Entrar al Dashboard</button>
+  </div>
+</div>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">One <span>Price</span> · Calidad</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="fecha-hora" id="reloj">—</div>
+      <button class="logout-btn hidden" id="btn-logout" onclick="cerrarSesion()">Salir</button>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-tabs">
+      <div class="nav-tab active" onclick="irA('checklist',event)">✓ Checklist</div>
+      <div class="nav-tab" onclick="irA('incidencias',event)">⚠ Incidencias</div>
+      <div class="nav-tab hidden" id="tab-dashboard" onclick="irA('dashboard',event)">◈ Dashboard</div>
+      <div class="nav-tab" id="tab-acceso" onclick="mostrarLogin()">🔐 Acceso</div>
+    </div>
+  </nav>
+</header>
+
+<main class="main">
+
+  <!-- ========== CHECKLIST ========== -->
+  <section class="section active" id="sec-checklist">
+    <div class="card">
+      <div class="card-title">Checklist de Turno</div>
+      <div class="card-subtitle">Llena al inicio y al final de cada turno</div>
+
+      <div class="suc-selector">
+        <button class="suc-btn" onclick="selSucursal(this,'Delta')" id="btn-Delta">
+          Sucursal Delta
+          <span class="suc-tag">Tintorería · Entrega 1 día</span>
+        </button>
+        <button class="suc-btn" onclick="selSucursal(this,'HEB')" id="btn-HEB">
+          Sucursal HEB
+          <span class="suc-tag">Lavado completo · Entrega 2-3 días</span>
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Turno</label>
+        <select id="sel-turno">
+          <option value="">— Selecciona turno —</option>
+          <option value="Turno 1" id="opt-t1">Turno 1</option>
+          <option value="Turno 2" id="opt-t2">Turno 2</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Encargada de turno</label>
+        <input type="text" id="inp-encargado" placeholder="Tu nombre">
+      </div>
+
+      <div class="divider"></div>
+
+      <div id="checklist-items">
+        <div class="check-categoria">🧺 Prendas y Servicio</div>
+        <ul class="checklist">
+          <li class="check-item"><input type="checkbox" id="c1"><label for="c1">Todas las prendas del turno anterior entregadas a tiempo</label></li>
+          <li class="check-item"><input type="checkbox" id="c2"><label for="c2">Prendas etiquetadas y organizadas correctamente</label></li>
+          <li class="check-item"><input type="checkbox" id="c3"><label for="c3">No hay prendas sin reclamar con más de 7 días</label></li>
+          <li class="check-item"><input type="checkbox" id="c4"><label for="c4">Procesos de lavado/planchado aplicados correctamente</label></li>
+          <li class="check-item"><input type="checkbox" id="c5"><label for="c5">Revisión visual de prendas antes de entrega (sin daños)</label></li>
+        </ul>
+        <div class="check-categoria">✨ Limpieza e Higiene</div>
+        <ul class="checklist">
+          <li class="check-item"><input type="checkbox" id="c6"><label for="c6">Mostrador y área de recepción limpios</label></li>
+          <li class="check-item"><input type="checkbox" id="c7"><label for="c7">Máquinas limpias y sin residuos</label></li>
+          <li class="check-item"><input type="checkbox" id="c8"><label for="c8">Piso barrido y trapeado</label></li>
+          <li class="check-item"><input type="checkbox" id="c9"><label for="c9">Baños limpios y con insumos</label></li>
+          <li class="check-item"><input type="checkbox" id="c10"><label for="c10">Área de planchado/doblado despejada y ordenada</label></li>
+        </ul>
+        <div class="check-categoria">👥 Atención al Cliente</div>
+        <ul class="checklist">
+          <li class="check-item"><input type="checkbox" id="c11"><label for="c11">Empleadas con presentación correcta</label></li>
+          <li class="check-item"><input type="checkbox" id="c12"><label for="c12">Tiempos de espera en recepción menores a 5 minutos</label></li>
+          <li class="check-item"><input type="checkbox" id="c13"><label for="c13">Clientes informados de fecha de entrega al recibir</label></li>
+          <li class="check-item"><input type="checkbox" id="c14"><label for="c14">Sin quejas o incidencias sin atender</label></li>
+        </ul>
+        <div class="check-categoria">⚙️ Operación General</div>
+        <ul class="checklist">
+          <li class="check-item"><input type="checkbox" id="c15"><label for="c15">Máquinas funcionando correctamente</label></li>
+          <li class="check-item"><input type="checkbox" id="c16"><label for="c16">Caja y sistema de tickets en orden</label></li>
+          <li class="check-item"><input type="checkbox" id="c17"><label for="c17">Apertura/cierre de caja realizado correctamente</label></li>
+        </ul>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="card-title" style="font-size:0.95rem; margin-bottom:12px;">Calificación del Turno</div>
+      <div id="rating-section">
+        <div class="rating-row"><span class="rating-label">Puntualidad en entregas</span><div class="stars" data-cat="puntualidad"><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span></div></div>
+        <div class="rating-row"><span class="rating-label">Calidad de prendas</span><div class="stars" data-cat="calidad"><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span></div></div>
+        <div class="rating-row"><span class="rating-label">Limpieza del local</span><div class="stars" data-cat="limpieza"><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span></div></div>
+        <div class="rating-row"><span class="rating-label">Atención al cliente</span><div class="stars" data-cat="atencion"><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span></div></div>
+      </div>
+
+      <div class="form-group" style="margin-top:16px;">
+        <label class="form-label">Observaciones (opcional)</label>
+        <textarea id="obs-turno" placeholder="Algún comentario, anomalía o punto de mejora..."></textarea>
+      </div>
+
+      <button class="btn btn-primary" id="btn-guardar-check" onclick="guardarChecklist()">💾 Guardar Checklist</button>
+    </div>
+  </section>
+
+  <!-- ========== INCIDENCIAS ========== -->
+  <section class="section" id="sec-incidencias">
+    <div class="card">
+      <div class="card-title">Registrar Incidencia</div>
+      <div class="card-subtitle">Documenta cualquier problema durante el turno</div>
+
+      <div class="suc-selector">
+        <button class="suc-btn" onclick="selSucursalInc(this,'Delta')" id="ibtn-Delta">Sucursal Delta</button>
+        <button class="suc-btn" onclick="selSucursalInc(this,'HEB')" id="ibtn-HEB">Sucursal HEB</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Turno</label>
+        <select id="inc-turno"><option value="">— Selecciona —</option><option>Turno 1</option><option>Turno 2</option></select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Tipo de incidencia</label>
+        <div class="radio-group" id="tipo-inc">
+          <button class="radio-btn" onclick="selTipo(this,'Prenda dañada')">👕 Prenda dañada</button>
+          <button class="radio-btn" onclick="selTipo(this,'Entrega tardía')">⏰ Entrega tardía</button>
+          <button class="radio-btn" onclick="selTipo(this,'Prenda perdida')">🔍 Prenda perdida</button>
+          <button class="radio-btn" onclick="selTipo(this,'Queja de cliente')">😤 Queja de cliente</button>
+          <button class="radio-btn" onclick="selTipo(this,'Falla de máquina')">⚙️ Falla de máquina</button>
+          <button class="radio-btn" onclick="selTipo(this,'Otro')">📝 Otro</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Severidad</label>
+        <div class="sev-row">
+          <button class="sev-btn sev-baja" onclick="selSev(this,'Baja')">Baja</button>
+          <button class="sev-btn sev-media" onclick="selSev(this,'Media')">Media</button>
+          <button class="sev-btn sev-alta" onclick="selSev(this,'Alta')">Alta</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Descripción</label>
+        <textarea id="inc-desc" placeholder="Describe qué ocurrió, con qué prenda o cliente, y cómo se resolvió..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">¿Se resolvió en el turno?</label>
+        <select id="inc-resuelta">
+          <option value="">— Selecciona —</option>
+          <option value="Sí">✅ Sí, se resolvió</option>
+          <option value="No">❌ No, pendiente</option>
+          <option value="Parcial">⚠️ Parcialmente</option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary" id="btn-guardar-inc" onclick="guardarIncidencia()">⚠️ Registrar Incidencia</button>
+    </div>
+  </section>
+
+  <!-- ========== DASHBOARD (solo dueño) ========== -->
+  <section class="section" id="sec-dashboard">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+      <div>
+        <div style="font-family:'DM Serif Display',serif; font-size:1.2rem; color:var(--azul);">Dashboard · One Price Irapuato</div>
+        <div style="font-size:0.75rem; color:var(--texto-suave);">Datos en tiempo real desde Google Sheets</div>
+      </div>
+      <div>
+        <span class="sync-badge sync-pending" id="sync-status">⟳ Cargando...</span>
+      </div>
+    </div>
+
+    <div class="filtros">
+      <button class="filtro-btn active" onclick="filtrarSuc(this,'Todas')">Todas</button>
+      <button class="filtro-btn" onclick="filtrarSuc(this,'Delta')">Delta</button>
+      <button class="filtro-btn" onclick="filtrarSuc(this,'HEB')">HEB</button>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-number" id="kpi-checklists">—</div><div class="kpi-label">Checklists</div></div>
+      <div class="kpi-card"><div class="kpi-number" id="kpi-incidencias">—</div><div class="kpi-label">Incidencias</div></div>
+      <div class="kpi-card"><div class="kpi-number" id="kpi-promedio">—</div><div class="kpi-label">Rating promedio</div></div>
+      <div class="kpi-card"><div class="kpi-number" id="kpi-pendientes">—</div><div class="kpi-label">Inc. pendientes</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Comparativo Delta vs HEB</div>
+      <div class="card-subtitle">Promedio de calificaciones por sucursal</div>
+      <div id="comparativo-suc" style="overflow-x:auto;"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Incidencias Recientes</div>
+      <div class="card-subtitle">Últimas incidencias registradas</div>
+      <div id="dash-incidencias" style="overflow-x:auto;"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Historial de Checklists</div>
+      <div style="overflow-x:auto;"><div id="tabla-hist"></div></div>
+    </div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzK21zLRuI6rVQFaHh6-fIZquYpNCLw8Bj5cwqLLp8V-G5BATSMWhoRpkSYiBM4EiA/exec';
+const PASS = '2310';
+
+let sucursalActual = null;
+let sucursalIncActual = null;
+let tipoIncActual = null;
+let sevActual = null;
+let ratings = { puntualidad:0, calidad:0, limpieza:0, atencion:0 };
+let dashData = { checklists:[], incidencias:[] };
+let filtroSuc = 'Todas';
+let sesionActiva = false;
+
+const horarios = {
+  Delta: { 'Turno 1':'8:00am – 4:00pm', 'Turno 2':'11:00am – 7:00pm' },
+  HEB:   { 'Turno 1':'9:00am – 5:00pm', 'Turno 2':'5:00pm – 8:00pm' }
+};
+
+// RELOJ
+function actualizarReloj() {
+  const a = new Date();
+  const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  document.getElementById('reloj').textContent = `${dias[a.getDay()]} ${a.getDate()} ${meses[a.getMonth()]} · ${String(a.getHours()).padStart(2,'0')}:${String(a.getMinutes()).padStart(2,'0')}`;
+}
+actualizarReloj();
+setInterval(actualizarReloj, 10000);
+
+// NAVEGACIÓN
+function irA(sec, e) {
+  if (e) e.stopPropagation();
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-' + sec).classList.add('active');
+  if (sec === 'checklist') document.querySelector('.nav-tab:nth-child(1)').classList.add('active');
+  if (sec === 'incidencias') document.querySelector('.nav-tab:nth-child(2)').classList.add('active');
+  if (sec === 'dashboard') {
+    document.getElementById('tab-dashboard').classList.add('active');
+    cargarDashboard();
+  }
+}
+
+// LOGIN
+function mostrarLogin() {
+  if (sesionActiva) {
+    irA('dashboard');
+    return;
+  }
+  document.getElementById('login-overlay').classList.remove('hidden');
+  setTimeout(() => document.getElementById('login-pass').focus(), 100);
+}
+
+function verificarPass() {
+  const pass = document.getElementById('login-pass').value;
+  if (pass === PASS) {
+    sesionActiva = true;
+    document.getElementById('login-overlay').classList.add('hidden');
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-error').style.display = 'none';
+    document.getElementById('tab-dashboard').classList.remove('hidden');
+    document.getElementById('tab-acceso').classList.add('hidden');
+    document.getElementById('btn-logout').classList.remove('hidden');
+    irA('dashboard');
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-pass').focus();
+  }
+}
+
+function cerrarSesion() {
+  sesionActiva = false;
+  document.getElementById('tab-dashboard').classList.add('hidden');
+  document.getElementById('tab-acceso').classList.remove('hidden');
+  document.getElementById('btn-logout').classList.add('hidden');
+  irA('checklist');
+  toast('Sesión cerrada', '');
+}
+
+// SUCURSAL
+function selSucursal(btn, suc) {
+  sucursalActual = suc;
+  document.querySelectorAll('#sec-checklist .suc-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const t1 = document.getElementById('opt-t1');
+  const t2 = document.getElementById('opt-t2');
+  t1.textContent = `Turno 1 (${horarios[suc]['Turno 1']})`;
+  t2.textContent = `Turno 2 (${horarios[suc]['Turno 2']})`;
+}
+function selSucursalInc(btn, suc) {
+  sucursalIncActual = suc;
+  document.querySelectorAll('#sec-incidencias .suc-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+function selTipo(btn, tipo) {
+  tipoIncActual = tipo;
+  document.querySelectorAll('#tipo-inc .radio-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+function selSev(btn, sev) {
+  sevActual = sev;
+  document.querySelectorAll('.sev-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+// ESTRELLAS
+document.querySelectorAll('.stars').forEach(grupo => {
+  const cat = grupo.dataset.cat;
+  grupo.querySelectorAll('.star').forEach(star => {
+    star.addEventListener('click', () => {
+      const val = parseInt(star.dataset.v);
+      ratings[cat] = val;
+      grupo.querySelectorAll('.star').forEach(s => s.classList.toggle('activa', parseInt(s.dataset.v) <= val));
+    });
+  });
+});
+
+// ENVIAR A SHEETS
+async function enviarSheets(data) {
+  try {
+    await fetch(SHEET_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+// GUARDAR CHECKLIST
+async function guardarChecklist() {
+  if (!sucursalActual) return toast('Selecciona una sucursal', 'error');
+  const turno = document.getElementById('sel-turno').value;
+  if (!turno) return toast('Selecciona el turno', 'error');
+  const encargado = document.getElementById('inp-encargado').value.trim();
+  if (!encargado) return toast('Ingresa tu nombre', 'error');
+
+  const checks = {};
+  document.querySelectorAll('#checklist-items input[type="checkbox"]').forEach(c => checks[c.id] = c.checked);
+  const total = Object.keys(checks).length;
+  const completados = Object.values(checks).filter(Boolean).length;
+  const obs = document.getElementById('obs-turno').value.trim();
+  const promedioRating = Object.values(ratings).filter(v=>v>0).length > 0
+    ? (Object.values(ratings).reduce((a,b)=>a+b,0) / Object.values(ratings).filter(v=>v>0).length).toFixed(1)
+    : null;
+
+  const registro = {
+    tipo: 'checklist',
+    id: Date.now(),
+    fecha: new Date().toLocaleDateString('es-MX'),
+    hora: new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
+    sucursal: sucursalActual, turno, encargado,
+    completados, total, ratings: {...ratings}, promedioRating, observaciones: obs
+  };
+
+  const btn = document.getElementById('btn-guardar-check');
+  btn.disabled = true;
+  btn.textContent = '⟳ Guardando...';
+
+  const ok = await enviarSheets(registro);
+  btn.disabled = false;
+  btn.innerHTML = '💾 Guardar Checklist';
+
+  if (ok) {
+    toast(`✅ Guardado en Google Sheets · ${completados}/${total} ítems`, 'success');
+    limpiarChecklist();
+  } else {
+    toast('Sin conexión · intenta de nuevo', 'error');
+  }
+}
+
+function limpiarChecklist() {
+  sucursalActual = null;
+  document.querySelectorAll('#sec-checklist .suc-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('sel-turno').value = '';
+  document.getElementById('inp-encargado').value = '';
+  document.querySelectorAll('#checklist-items input[type="checkbox"]').forEach(c => c.checked = false);
+  document.getElementById('obs-turno').value = '';
+  ratings = { puntualidad:0, calidad:0, limpieza:0, atencion:0 };
+  document.querySelectorAll('.star').forEach(s => s.classList.remove('activa'));
+}
+
+// GUARDAR INCIDENCIA
+async function guardarIncidencia() {
+  if (!sucursalIncActual) return toast('Selecciona una sucursal', 'error');
+  if (!tipoIncActual) return toast('Selecciona el tipo de incidencia', 'error');
+  if (!sevActual) return toast('Selecciona la severidad', 'error');
+  const desc = document.getElementById('inc-desc').value.trim();
+  if (!desc) return toast('Describe la incidencia', 'error');
+  const resuelta = document.getElementById('inc-resuelta').value;
+  if (!resuelta) return toast('Indica si se resolvió', 'error');
+
+  const inc = {
+    tipo: 'incidencia',
+    id: Date.now(),
+    fecha: new Date().toLocaleDateString('es-MX'),
+    hora: new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}),
+    sucursal: sucursalIncActual,
+    turno: document.getElementById('inc-turno').value || '—',
+    tipo_inc: tipoIncActual,
+    severidad: sevActual,
+    descripcion: desc,
+    resuelta
+  };
+
+  const btn = document.getElementById('btn-guardar-inc');
+  btn.disabled = true;
+  btn.textContent = '⟳ Guardando...';
+
+  const ok = await enviarSheets(inc);
+  btn.disabled = false;
+  btn.innerHTML = '⚠️ Registrar Incidencia';
+
+  if (ok) {
+    toast('⚠️ Incidencia registrada en Sheets', 'success');
+    limpiarIncidencia();
+  } else {
+    toast('Sin conexión · intenta de nuevo', 'error');
+  }
+}
+
+function limpiarIncidencia() {
+  sucursalIncActual = null; tipoIncActual = null; sevActual = null;
+  document.querySelectorAll('#sec-incidencias .suc-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('#tipo-inc .radio-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.sev-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('inc-desc').value = '';
+  document.getElementById('inc-resuelta').value = '';
+  document.getElementById('inc-turno').value = '';
+}
+
+// DASHBOARD
+async function cargarDashboard() {
+  document.getElementById('sync-status').className = 'sync-badge sync-pending';
+  document.getElementById('sync-status').textContent = '⟳ Cargando...';
+  try {
+    const res = await fetch(SHEET_URL + '?t=' + Date.now());
+    const data = await res.json();
+    dashData = data;
+    document.getElementById('sync-status').className = 'sync-badge sync-ok';
+    document.getElementById('sync-status').textContent = '✓ Sincronizado';
+    renderDashboard();
+  } catch(e) {
+    document.getElementById('sync-status').className = 'sync-badge sync-fail';
+    document.getElementById('sync-status').textContent = '✗ Sin conexión';
+  }
+}
+
+function filtrarSuc(btn, suc) {
+  filtroSuc = suc;
+  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDashboard();
+}
+
+function renderDashboard() {
+  let checklists = dashData.checklists || [];
+  let incidencias = dashData.incidencias || [];
+
+  if (filtroSuc !== 'Todas') {
+    checklists = checklists.filter(c => c.sucursal === filtroSuc);
+    incidencias = incidencias.filter(i => i.sucursal === filtroSuc);
+  }
+
+  document.getElementById('kpi-checklists').textContent = checklists.length;
+  document.getElementById('kpi-incidencias').textContent = incidencias.length;
+  const pendientes = incidencias.filter(i => i.resuelta === 'No').length;
+  document.getElementById('kpi-pendientes').textContent = pendientes;
+
+  const conRating = checklists.filter(c => c.promedio && parseFloat(c.promedio) > 0);
+  if (conRating.length) {
+    const prom = (conRating.reduce((a,c) => a+parseFloat(c.promedio),0)/conRating.length).toFixed(1);
+    document.getElementById('kpi-promedio').textContent = prom + '★';
+  } else {
+    document.getElementById('kpi-promedio').textContent = '—';
+  }
+
+  // Comparativo
+  const sucursales = filtroSuc === 'Todas' ? ['Delta','HEB'] : [filtroSuc];
+  const cats = { r_puntualidad:'Puntualidad', r_calidad:'Calidad', r_limpieza:'Limpieza', r_atencion:'Atención' };
+  const cont = document.getElementById('comparativo-suc');
+  if (!checklists.length) {
+    cont.innerHTML = `<div class="empty-state"><div class="icon">📊</div><p>No hay datos aún</p></div>`;
+  } else {
+    let html = `<table class="tabla-historial"><thead><tr><th>Categoría</th>`;
+    sucursales.forEach(s => html += `<th>${s}</th>`);
+    html += `</tr></thead><tbody>`;
+    Object.keys(cats).forEach(cat => {
+      html += `<tr><td>${cats[cat]}</td>`;
+      sucursales.forEach(s => {
+        const items = (dashData.checklists||[]).filter(c => c.sucursal===s && parseFloat(c[cat])>0);
+        if (items.length) {
+          const prom = (items.reduce((a,c)=>a+parseFloat(c[cat]),0)/items.length).toFixed(1);
+          const cls = prom>=4?'badge-ok':prom>=3?'badge-warn':'badge-error';
+          html += `<td><span class="badge ${cls}">${prom} ★</span></td>`;
+        } else { html += `<td><span style="color:var(--texto-suave);font-size:0.8rem;">—</span></td>`; }
+      });
+      html += `</tr>`;
+    });
+    html += `</tbody></table>`;
+    cont.innerHTML = html;
+  }
+
+  // Incidencias recientes
+  const sevBadge = {Baja:'badge-ok',Media:'badge-warn',Alta:'badge-error'};
+  const resBadge = {'Sí':'badge-ok','No':'badge-error','Parcial':'badge-warn'};
+  const divInc = document.getElementById('dash-incidencias');
+  if (!incidencias.length) {
+    divInc.innerHTML = `<div class="empty-state"><div class="icon">✅</div><p>Sin incidencias registradas</p></div>`;
+  } else {
+    divInc.innerHTML = `<table class="tabla-historial"><thead><tr><th>Fecha</th><th>Sucursal</th><th>Tipo</th><th>Severidad</th><th>Resuelta</th></tr></thead><tbody>
+      ${[...incidencias].reverse().slice(0,20).map(i=>`<tr>
+        <td>${i.fecha} ${i.hora}</td><td>${i.sucursal}</td><td>${i.tipo}</td>
+        <td><span class="badge ${sevBadge[i.severidad]||''}">${i.severidad}</span></td>
+        <td><span class="badge ${resBadge[i.resuelta]||''}">${i.resuelta}</span></td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  }
+
+  // Historial checklists
+  const divHist = document.getElementById('tabla-hist');
+  if (!checklists.length) {
+    divHist.innerHTML = `<div class="empty-state"><div class="icon">📁</div><p>No hay registros aún</p></div>`;
+  } else {
+    divHist.innerHTML = `<table class="tabla-historial"><thead><tr><th>Fecha</th><th>Sucursal</th><th>Turno</th><th>Encargada</th><th>Cumplimiento</th><th>Rating</th></tr></thead><tbody>
+      ${[...checklists].reverse().slice(0,50).map(c=>{
+        const pct = c.pct || Math.round((parseInt(c.completados)/parseInt(c.total))*100)+'%';
+        const n = parseInt(pct);
+        const cls = n>=90?'badge-ok':n>=70?'badge-warn':'badge-error';
+        return `<tr>
+          <td>${c.fecha} ${c.hora}</td><td>${c.sucursal}</td><td>${c.turno}</td>
+          <td>${c.encargado}</td>
+          <td><span class="badge ${cls}">${pct}</span></td>
+          <td>${c.promedio?c.promedio+'★':'—'}</td>
+        </tr>`;
+      }).join('')}
+    </tbody></table>`;
+  }
+}
+
+// TOAST
+function toast(msg, tipo='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${tipo}`;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
